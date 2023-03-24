@@ -9,12 +9,15 @@ class MessageType(Enum):
     OK = 3
     CAN_JOIN = 4
 
+
 class Message:
     
-    def __init__(self, type, sender, value = None):
+    def __init__(self, type, sender, value = None, **kwargs):
         self.type = type
         self.value = value
         self.sender = sender 
+        self.trace = kwargs["trace"] if "trace" in kwargs.keys() else []
+
 
 class DHT:
 
@@ -51,13 +54,15 @@ class DHT:
             
         return new_ip
 
-    def create_node(self, env):
-        id = self.generate_unique_id()
+    def create_node(self, env, id = None):
+        if id is None:
+            id = self.generate_unique_id()
         ip = self.generate_unique_ip()
         node = Node(env, id, ip)
         DHT.network[ip] = node # Ajouter node a la table des adresses de la DHT
         logging.debug(f"{env.now} - CREATING NODE FOR {ip} WITH VALUE {id}")
         env.process(node.join(DHT.network.keys()))
+        return node 
 
 
 def transport(env, dest, message):
@@ -78,32 +83,37 @@ class Node:
         self.ok_received = env.event()
         self.can_join = env.event()
 
-    def join(self, ips):
+    def join(self, ips, ip_debug = None):
 
         join_delay = self.env.timeout(1)
 
-        logging.debug(f"{self.env.now} - {self.ip} trying to join network of length {len(DHT.network)}")
+        logging.debug(f"{self.env.now} - {self.ip} trying to join network of length {len(DHT.network) - 1}")
 
         if len(ips) == 1: # Cas particulier 1 noeud
             self.leftNeighbors = [self.ip]
             self.rightNeighbors = [self.ip]
             return 
             
-        ip_to_contact = random.choice(list(DHT.network.keys()))
+        # Selection d'un noeud au hasard à contacter qui n'est pas moi
+        ip_to_contact = ip_debug
+        if ip_debug is None:
+            ip_to_contact = random.choice(list(DHT.network.keys()))
+        while ip_to_contact == self.ip:
+            ip_to_contact = random.choice(list(DHT.network.keys()))
+
         message = Message(MessageType.JOIN_REQUEST, self.ip, (self.ip, self.id))
         self.env.process(self.send_message(ip_to_contact, message))
 
         yield self.can_join & join_delay # Join delay
-
-        
-    
+        logging.info(f"{self.env.now} - JOIN : ({self.ip}, {self.id})")
+   
 
     def send_message(self, ip_dest, message):
         logging.debug(f"{self.env.now} - {self.ip} sending {message.type.name} to {ip_dest}")
         dest = DHT.network[ip_dest]
+        message.trace.append((self.ip, self.id))
         self.env.process(transport(self.env, dest, message))
-        time_out = self.env.timeout(100) 
-        ok = yield self.ok_received | time_out #regarder valeur ok pour svaoir crash
+        ok = yield self.ok_received  #regarder valeur ok pour svaoir crash
 
     def send_ok(self, ip_dest):
         dest = DHT.network[ip_dest]
@@ -115,8 +125,7 @@ class Node:
     def receive_message(self, message):
         logging.debug(f"{self.env.now} - {self.ip} received {message.type.name} from {message.sender}")
         if message.type == MessageType.JOIN_REQUEST:
-            self.handle_join_request(message.value[0], message.value[1])
-            logging.warning("aled")
+            self.handle_join_request(message)
             # A prendre en compte si un noeud crash pendant le ok
             # self.send_ok(message.sender)
 
@@ -135,14 +144,119 @@ class Node:
             self.ok_received = self.env.event()
 
 
-    def handle_join_request(self, ip_requester, id_requester):
-        # Cas particulier 1 noeud
+    def handle_join_request(self, message):
+
+        ip_requester = message.value[0]
+        id_requester = message.value[1] 
+
         if self.rightNeighbors == self.leftNeighbors:
-            self.update_neighbors(left = ip_requester, right = ip_requester)
-            message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {"left" : self.ip, "right" : self.ip})
-            self.env.process(self.send_message(ip_requester, message))
+            # Cas particulier 1 noeuds
+            if self.ip in self.rightNeighbors:
+                self.update_neighbors(left = ip_requester, right = ip_requester)
+                message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {"left" : self.ip, "right" : self.ip})
+                self.env.process(self.send_message(ip_requester, message))
+
+            # Cas particulier 2 noeuds
+            else:
+                self.insert_neighbor("left", ip_requester)
             self.env.process(self.send_message(ip_requester, Message(MessageType.CAN_JOIN, self.ip)))
 
+        # Cas général
+        else:
+            direction_to_insert = self.check_can_be_inserted(id_requester)
+            if  direction_to_insert is not None:
+                self.insert_neighbor(direction_to_insert, ip_requester)
+                self.env.process(self.send_message(ip_requester, Message(MessageType.CAN_JOIN, self.ip)))
+                return
+
+            self.route_join_request(message)
+            
+    
+                
+        
+
+    def route_join_request(self, message):
+
+        ip_requester = message.value[0]
+        id_requester = message.value[1] 
+
+        all_neighbors_ip = [*self.rightNeighbors, *self.leftNeighbors]
+        all_neighbors_id_sorted = sorted([ DHT.network[ip].id for ip in all_neighbors_ip ])
+        next_node_id = None
+
+        # if id_requester < self.id:
+            # reverse list to find first id that is smaller than id_requester, otherwise smallest neighbor
+        next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_requester ) , all_neighbors_id_sorted[::-1][-1] )
+            
+        # else:
+        #      next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted if neighbor_id > id_requester ) , all_neighbors_id_sorted[-1] )
+        
+        next_node_ip = [ip for ip, node in DHT.network.items() if node.id == next_node_id][0]
+        
+        self.env.process(self.send_message(next_node_ip, message))
+
+    def check_can_be_inserted(self, id_to_insert):
+        
+        id_left = DHT.network[self.leftNeighbors[0]].id
+        id_right = DHT.network[self.rightNeighbors[0]].id
+
+        # Cas particulier bout de cycle
+        if (id_left > self.id and id_right > self.id ) or (id_left < self.id and id_right < self.id):
+            # Si id to inster compris entre les bornes des voisins -> pas inserable ici
+            if ( id_left > id_to_insert > id_right ) or ( id_left < id_to_insert < id_right ):
+                return None
+            # Si c'est inserable
+            else :
+                if self.id > max([id_left, id_right]): # Si on est sur le max de la DHT        
+                    if id_to_insert > max([id_left, id_right]) and id_to_insert < self.id:
+                        return "left" if max([id_left, id_right]) == id_left else "right"
+                    else:
+                        return "right" if max([id_left, id_right]) == id_left else "left"
+                else: # Si on est sur le min de la DHT
+                    if id_to_insert > self.id and id_to_insert < min([id_left, id_right]):
+                        return "left" if min([id_left, id_right]) == id_left else "right"
+                    else:
+                        return "right" if min([id_left, id_right]) == id_left else "left"
+
+        # Cas général
+        if id_to_insert > self.id:
+            if id_to_insert > max([id_left, id_right]):
+                return None
+            
+            return "left" if max([id_left, id_right]) == id_left else "right"
+        
+        else:
+            if id_to_insert < min([id_left, id_right]):
+                return None
+
+            return "left" if min([id_left, id_right]) == id_left else "right"
+
+        
+    def insert_neighbor(self, direction, ip_to_insert):
+
+        # Contacter mon neighbor
+        past_neighbor = None
+        direction_neighbor = ""
+        
+        if direction == "left":
+            past_neighbor = self.leftNeighbors[0]
+            direction_neighbor = "right"
+        else :
+            past_neighbor = self.rightNeighbors[0]
+            direction_neighbor = "left"
+
+        message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {direction_neighbor : ip_to_insert})    
+        self.env.process(self.send_message(past_neighbor, message))
+
+        # Update mes neighbors
+        kwargs = {}
+        kwargs[direction] = ip_to_insert
+        self.update_neighbors(**kwargs)  
+
+        # Contacter le noeud qui rejoint
+        neighbors_new_node = { "left" : past_neighbor, "right" : self.ip} if direction == "left" else { "left" : self.ip, "right" : past_neighbor}
+        message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, neighbors_new_node)    
+        self.env.process(self.send_message(ip_to_insert, message))
         
 
     def update_neighbors(self, **kwargs):
@@ -150,12 +264,18 @@ class Node:
             self.leftNeighbors = [kwargs["left"]]
         if "right" in kwargs:
             self.rightNeighbors = [kwargs["right"]]
-        logging.debug(f"{self.env.now} - updated neighbors {kwargs}")
+        logging.debug(f"{self.env.now} - {self.ip} updated neighbors {kwargs}")
 
             
-        
-
-
 
     def leave(self):
-        pass
+        logging.info(f"{self.env.now} - ({self.ip}, {self.id}) LEFT")
+        if len(DHT.network) != 1:
+            message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {"right" : self.rightNeighbors[0]})
+            yield self.env.process(self.send_message(self.leftNeighbors[0], message))
+
+            message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {"left" : self.leftNeighbors[0]})
+            yield self.env.process(self.send_message(self.rightNeighbors[0], message))
+
+        DHT.network.pop(self.ip)
+        

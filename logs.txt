@@ -1,17 +1,68 @@
-DEBUG - 0 - CREATING NODE FOR 57782 WITH VALUE 692
-DEBUG - 0 - 57782 trying to join network of length 1
-DEBUG - 1 - CREATING NODE FOR 35484 WITH VALUE 41
-DEBUG - 1 - 35484 trying to join network of length 2
-DEBUG - 1 - 35484 sending JOIN_REQUEST to 35484
-DEBUG - 2 - 35484 received JOIN_REQUEST from 35484
-DEBUG - 2 - updated neighbors {'left': 35484, 'right': 35484}
-WARNING - aled
-DEBUG - 2 - 35484 sending UPDATE_NEIGHBORS to 35484
-DEBUG - 2 - 35484 sending CAN_JOIN to 35484
-DEBUG - 3 - 35484 received UPDATE_NEIGHBORS from 35484
-DEBUG - 3 - updated neighbors {'left': 35484, 'right': 35484}
-DEBUG - 3 - 35484 sending OK to 35484
-DEBUG - 3 - 35484 received CAN_JOIN from 35484
-DEBUG - 3 - 35484 sending OK to 35484
-DEBUG - 4 - 35484 received OK from 35484
-DEBUG - 4 - 35484 received OK from 35484
+DEBUG - 0 - CREATING NODE FOR 16480 WITH VALUE 472
+DEBUG - 0 - 16480 trying to join network of length 0
+DEBUG - 1 - CREATING NODE FOR 48857 WITH VALUE 172
+DEBUG - 1 - 48857 trying to join network of length 1
+DEBUG - 1 - 48857 sending JOIN_REQUEST to 16480
+DEBUG - 2 - 16480 received JOIN_REQUEST from 48857
+DEBUG - 2 - 16480 updated neighbors {'left': 48857, 'right': 48857}
+DEBUG - 2 - 16480 sending UPDATE_NEIGHBORS to 48857
+DEBUG - 2 - 16480 sending CAN_JOIN to 48857
+DEBUG - 3 - 48857 received UPDATE_NEIGHBORS from 16480
+DEBUG - 3 - 48857 updated neighbors {'left': 16480, 'right': 16480}
+DEBUG - 3 - 48857 sending OK to 16480
+DEBUG - 3 - 48857 received CAN_JOIN from 16480
+DEBUG - 3 - 48857 sending OK to 16480
+INFO - 3 - JOIN : (48857, 172)
+DEBUG - 4 - 16480 received OK from 48857
+DEBUG - 4 - 16480 received OK from 48857
+DEBUG - 4 - CREATING NODE FOR 55121 WITH VALUE 904
+DEBUG - 4 - 55121 trying to join network of length 2
+DEBUG - 4 - 55121 sending JOIN_REQUEST to 48857
+DEBUG - 5 - 48857 received JOIN_REQUEST from 55121
+DEBUG - 5 - 48857 updated neighbors {'left': 55121}
+DEBUG - 5 - 48857 sending UPDATE_NEIGHBORS to 16480
+DEBUG - 5 - 48857 sending UPDATE_NEIGHBORS to 55121
+DEBUG - 5 - 48857 sending CAN_JOIN to 55121
+DEBUG - 6 - 16480 received UPDATE_NEIGHBORS from 48857
+DEBUG - 6 - 16480 updated neighbors {'right': 55121}
+DEBUG - 6 - 16480 sending OK to 48857
+DEBUG - 6 - 55121 received UPDATE_NEIGHBORS from 48857
+DEBUG - 6 - 55121 updated neighbors {'left': 16480, 'right': 48857}
+DEBUG - 6 - 55121 sending OK to 48857
+DEBUG - 6 - 55121 received CAN_JOIN from 48857
+DEBUG - 6 - 55121 sending OK to 48857
+INFO - 6 - JOIN : (55121, 904)
+DEBUG - 7 - 48857 received OK from 16480
+DEBUG - 7 - 48857 received OK from 55121
+DEBUG - 7 - 48857 received OK from 55121
+DEBUG - 7 - CREATING NODE FOR 76763 WITH VALUE 330
+DEBUG - 7 - 76763 trying to join network of length 3
+DEBUG - 7 - 76763 sending JOIN_REQUEST to 16480
+DEBUG - 8 - 16480 received JOIN_REQUEST from 76763
+DEBUG - 8 - 16480 updated neighbors {'left': 76763}
+DEBUG - 8 - 16480 sending UPDATE_NEIGHBORS to 48857
+DEBUG - 8 - 16480 sending UPDATE_NEIGHBORS to 76763
+DEBUG - 8 - 16480 sending CAN_JOIN to 76763
+DEBUG - 9 - 48857 received UPDATE_NEIGHBORS from 16480
+DEBUG - 9 - 48857 updated neighbors {'right': 76763}
+DEBUG - 9 - 48857 sending OK to 16480
+DEBUG - 9 - 76763 received UPDATE_NEIGHBORS from 16480
+DEBUG - 9 - 76763 updated neighbors {'left': 48857, 'right': 16480}
+DEBUG - 9 - 76763 sending OK to 16480
+DEBUG - 9 - 76763 received CAN_JOIN from 16480
+DEBUG - 9 - 76763 sending OK to 16480
+INFO - 9 - JOIN : (76763, 330)
+DEBUG - 10 - 16480 received OK from 48857
+DEBUG - 10 - 16480 received OK from 76763
+DEBUG - 10 - 16480 received OK from 76763
+INFO - 10 - (76763, 330) LEFT
+DEBUG - 10 - 76763 sending UPDATE_NEIGHBORS to 48857
+DEBUG - 11 - 48857 received UPDATE_NEIGHBORS from 76763
+DEBUG - 11 - 48857 updated neighbors {'right': 16480}
+DEBUG - 11 - 48857 sending OK to 76763
+DEBUG - 12 - 76763 received OK from 48857
+DEBUG - 12 - 76763 sending UPDATE_NEIGHBORS to 16480
+DEBUG - 13 - 16480 received UPDATE_NEIGHBORS from 76763
+DEBUG - 13 - 16480 updated neighbors {'left': 48857}
+DEBUG - 13 - 16480 sending OK to 76763
+DEBUG - 14 - 76763 received OK from 16480
