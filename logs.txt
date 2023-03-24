@@ -1,0 +1,17 @@
+DEBUG - 0 - CREATING NODE FOR 57782 WITH VALUE 692
+DEBUG - 0 - 57782 trying to join network of length 1
+DEBUG - 1 - CREATING NODE FOR 35484 WITH VALUE 41
+DEBUG - 1 - 35484 trying to join network of length 2
+DEBUG - 1 - 35484 sending JOIN_REQUEST to 35484
+DEBUG - 2 - 35484 received JOIN_REQUEST from 35484
+DEBUG - 2 - updated neighbors {'left': 35484, 'right': 35484}
+WARNING - aled
+DEBUG - 2 - 35484 sending UPDATE_NEIGHBORS to 35484
+DEBUG - 2 - 35484 sending CAN_JOIN to 35484
+DEBUG - 3 - 35484 received UPDATE_NEIGHBORS from 35484
+DEBUG - 3 - updated neighbors {'left': 35484, 'right': 35484}
+DEBUG - 3 - 35484 sending OK to 35484
+DEBUG - 3 - 35484 received CAN_JOIN from 35484
+DEBUG - 3 - 35484 sending OK to 35484
+DEBUG - 4 - 35484 received OK from 35484
+DEBUG - 4 - 35484 received OK from 35484
