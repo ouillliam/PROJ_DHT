@@ -8,6 +8,7 @@ class MessageType(Enum):
     UPDATE_NEIGHBORS = 2
     OK = 3
     CAN_JOIN = 4
+    DUMMY = 5
 
 
 class Message:
@@ -65,6 +66,7 @@ class DHT:
         return node 
 
 
+# Simulate transport delay
 def transport(env, dest, message):
     yield env.timeout(1)
     dest.receive_message(message)
@@ -101,33 +103,38 @@ class Node:
         while ip_to_contact == self.ip:
             ip_to_contact = random.choice(list(DHT.network.keys()))
 
-        message = Message(MessageType.JOIN_REQUEST, self.ip, (self.ip, self.id))
+        message = Message(MessageType.JOIN_REQUEST, self.ip, {"ip_dest" : self.ip,"id_dest" : self.id})
         self.env.process(self.send_message(ip_to_contact, message))
 
         yield self.can_join & join_delay # Join delay
         logging.info(f"{self.env.now} - JOIN : ({self.ip}, {self.id})")
    
 
-    def send_message(self, ip_dest, message):
+    def deliver_message(self, id_dest, message):
+        logging.debug(f"{self.env.now} - {self.id} DELIVERING {message.type.name} to {id_dest}")
+        message.value["id_dest"] = id_dest
+        self.route_message(message)
+
+
+    def send_message(self, ip_dest, message): # REWORK DEST
         logging.debug(f"{self.env.now} - {self.ip} sending {message.type.name} to {ip_dest}")
         dest = DHT.network[ip_dest]
         message.trace.append((self.ip, self.id))
         self.env.process(transport(self.env, dest, message))
+        if message.type == MessageType.OK:
+            return 
         ok = yield self.ok_received  #regarder valeur ok pour svaoir crash
 
     def send_ok(self, ip_dest):
-        dest = DHT.network[ip_dest]
         message = Message(MessageType.OK, self.ip)
-        logging.debug(f"{self.env.now} - {self.ip} sending {message.type.name} to {ip_dest}")
-        self.env.process(transport(self.env ,dest, message))
+        self.env.process(self.send_message(ip_dest, message))
     
 
     def receive_message(self, message):
         logging.debug(f"{self.env.now} - {self.ip} received {message.type.name} from {message.sender}")
         if message.type == MessageType.JOIN_REQUEST:
             self.handle_join_request(message)
-            # A prendre en compte si un noeud crash pendant le ok
-            # self.send_ok(message.sender)
+            self.send_ok(message.sender)
 
         elif message.type == MessageType.UPDATE_NEIGHBORS:
             self.update_neighbors(**message.value)
@@ -138,16 +145,22 @@ class Node:
             self.can_join = self.env.event()
             self.send_ok(message.sender)
            
-        
         elif message.type == MessageType.OK:
             self.ok_received.succeed(message.sender)
             self.ok_received = self.env.event()
 
+        elif message.type == MessageType.DUMMY:
+            if message.value["id_dest"] == self.id:
+                logging.debug(f"{self.env.now} - {self.id} received dummy {message.type.name} from {message.sender}")
+                return
+            self.route_message(message)
+            
+
 
     def handle_join_request(self, message):
 
-        ip_requester = message.value[0]
-        id_requester = message.value[1] 
+        ip_requester = message.value["ip_dest"]
+        id_requester = message.value["id_dest"] 
 
         if self.rightNeighbors == self.leftNeighbors:
             # Cas particulier 1 noeuds
@@ -169,29 +182,26 @@ class Node:
                 self.env.process(self.send_message(ip_requester, Message(MessageType.CAN_JOIN, self.ip)))
                 return
 
-            self.route_join_request(message)
+            self.route_message(message)
             
-    
-                
-        
 
-    def route_join_request(self, message):
+    def route_message(self, message):
 
-        ip_requester = message.value[0]
-        id_requester = message.value[1] 
+        id_dest = message.value["id_dest"] 
 
         all_neighbors_ip = [*self.rightNeighbors, *self.leftNeighbors]
-        all_neighbors_id_sorted = sorted([ DHT.network[ip].id for ip in all_neighbors_ip ])
-        next_node_id = None
 
-        # if id_requester < self.id:
-            # reverse list to find first id that is smaller than id_requester, otherwise smallest neighbor
-        next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_requester ) , all_neighbors_id_sorted[::-1][-1] )
-            
-        # else:
-        #      next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted if neighbor_id > id_requester ) , all_neighbors_id_sorted[-1] )
-        
+        all_neighbors_id_sorted = sorted([ DHT.network[ip].id for ip in all_neighbors_ip ])
+        next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest ) , all_neighbors_id_sorted[::-1][-1] )
         next_node_ip = [ip for ip, node in DHT.network.items() if node.id == next_node_id][0]
+
+        # Remettre la condition d emort 
+
+        # Avoid loop
+        # while (next_node_ip, next_node_id) in message.trace:
+        #     next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest ) , all_neighbors_id_sorted[::-1][-1] )
+        #     next_node_ip = [ip for ip, node in DHT.network.items() if node.id == next_node_id][0]
+        print(list((neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest )))
         
         self.env.process(self.send_message(next_node_ip, message))
 
