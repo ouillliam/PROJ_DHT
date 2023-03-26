@@ -3,12 +3,18 @@ import random
 from enum import Enum
 import logging
 
+# TO DO - GERE DATA INEXISTANT - GERER DATA AVEC LEAVE/AJOUT
+
 class MessageType(Enum):
     JOIN_REQUEST = 1
     UPDATE_NEIGHBORS = 2
     OK = 3
     CAN_JOIN = 4
     DUMMY = 5
+    STORE_DATA = 6
+    REPLICATE = 7
+    GET_DATA = 8
+    RESPONSE_DATA = 9
 
 
 class Message:
@@ -19,10 +25,29 @@ class Message:
         self.sender = sender 
         self.trace = kwargs["trace"] if "trace" in kwargs.keys() else []
 
+class Data:
+
+    def __init__(self, value, **kwargs):
+        if "id" in kwargs.keys(): 
+            self.id = kwargs["id"]
+        else: 
+            self.id = self.generate_unique_data_id()
+        
+        self.value = value
+
+    def generate_unique_data_id(self):
+        exclude = [datum.id for datum in DHT.data.values()]
+        new_id = random.randint(0,1000)
+        while new_id in exclude:
+            new_id = random.randint(0,1000)
+            
+        return new_id
+
 
 class DHT:
 
     network = {}
+    data = {}
 
     def __init__(self, env):
         self.env = env
@@ -45,7 +70,7 @@ class DHT:
         while new_id in exclude:
             new_id = random.randint(0,1000)
             
-        return new_id
+        return new_id 
     
     def generate_unique_ip(self):
         exclude = [ip for ip in DHT.network.keys()]
@@ -55,6 +80,7 @@ class DHT:
             
         return new_ip
 
+    # Simuler creation noeud et insertion
     def create_node(self, env, id = None):
         if id is None:
             id = self.generate_unique_id()
@@ -64,6 +90,14 @@ class DHT:
         logging.debug(f"{env.now} - CREATING NODE FOR {ip} WITH VALUE {id}")
         env.process(node.join(DHT.network.keys()))
         return node 
+    
+    # Simuler storage
+    def store_data(self, env, value, id):
+        datum = Data(value, id = id)
+        node = random.choice(list(DHT.network.values()))
+        logging.debug(f"{env.now} - TRYING TO STORE {datum.id} WITH VALUE {datum.value}")
+        node.upload_data(datum)
+        DHT.data[datum.id] = datum
 
 
 # Simulate transport delay
@@ -84,10 +118,68 @@ class Node:
         self.alive = True
         self.ok_received = env.event()
         self.can_join = env.event()
+        self.data = {}
+
+    # Cette fonction existe pour simuler un individu qui lance un premier upload de data
+    # Et donc creation d'un message correspondant
+    def upload_data(self, data):
+        if self.check_if_can_store(data):
+            self.store(data)
+            return 
+        
+        message = Message(MessageType.STORE_DATA, self.ip, {"id_dest" : data.id, "data" : data})
+        self.route_message(message)
+
+
+    def handle_store(self, message):
+        data = message.value["data"]
+        if self.check_if_can_store(data):
+            self.store(data)
+            message_replicate = Message(MessageType.REPLICATE, self.ip, {"data" : data})
+            self.env.process(self.send_message(self.leftNeighbors[0], message_replicate))
+            self.env.process(self.send_message(self.rightNeighbors[0], message_replicate))
+            return
+
+        self.route_message(message)
+
+    def check_if_can_store(self, data):
+        all_neighbors_ip = [*self.rightNeighbors, *self.leftNeighbors]
+        all_neighbors_id = [ DHT.network[ip].id for ip in all_neighbors_ip ]
+
+        diff_self = abs(data.id - self.id)
+        diff_neighbors = [ abs(data.id - id_neighbor) for id_neighbor in all_neighbors_id]
+
+        print(f"moi : {self.id}")
+
+        if all([diff_self <= diff_n for diff_n in diff_neighbors]):
+            return True
+        
+        return False
+
+    def store(self, data):
+        logging.info(f"{self.env.now} - {self.id} STORING ({data.id}, {data.value})")
+        self.data[data.id] = data
+
+
+    def get_data(self, id_data):
+        message = Message(MessageType.GET_DATA, self.ip, {"id_dest" : id_data, "ip_requester" : self.ip})
+        self.route_message(message)
+
+
+    def handle_get_data(self, message):
+        # Prendre en compte id inexistant ?
+        id_data = message.value["id_dest"]
+        ip_requester = message.value["ip_requester"]
+
+        print(f"{self.id} - {id_data}")
+
+        if id_data in self.data.keys():
+            self.env.process(self.send_message(ip_requester, Message(MessageType.RESPONSE_DATA, self.ip, {"data" : self.data[id_data]})))
+            return 
+        
+        self.route_message(message)
 
     def join(self, ips, ip_debug = None):
-
-        join_delay = self.env.timeout(1)
 
         logging.debug(f"{self.env.now} - {self.ip} trying to join network of length {len(DHT.network) - 1}")
 
@@ -106,6 +198,7 @@ class Node:
         message = Message(MessageType.JOIN_REQUEST, self.ip, {"ip_dest" : self.ip,"id_dest" : self.id})
         self.env.process(self.send_message(ip_to_contact, message))
 
+        join_delay = self.env.timeout(1)
         yield self.can_join & join_delay # Join delay
         logging.info(f"{self.env.now} - JOIN : ({self.ip}, {self.id})")
    
@@ -117,7 +210,7 @@ class Node:
 
 
     def send_message(self, ip_dest, message): # REWORK DEST
-        logging.debug(f"{self.env.now} - {self.ip} sending {message.type.name} to {ip_dest}")
+        logging.debug(f"{self.env.now} - {self.id} sending {message.type.name} to {ip_dest}")
         dest = DHT.network[ip_dest]
         message.trace.append((self.ip, self.id))
         self.env.process(transport(self.env, dest, message))
@@ -151,10 +244,25 @@ class Node:
 
         elif message.type == MessageType.DUMMY:
             if message.value["id_dest"] == self.id:
-                logging.debug(f"{self.env.now} - {self.id} received dummy {message.type.name} from {message.sender}")
+                logging.debug(f"{self.env.now} - SUCCESSFUL DELIVERY TO {self.id} from {message.trace[0]}")
                 return
             self.route_message(message)
-            
+            self.send_ok(message.sender)
+
+        elif message.type == MessageType.STORE_DATA:
+            self.handle_store(message)
+            self.send_ok(message.sender)
+
+        elif message.type == MessageType.REPLICATE:
+            self.store(message.value["data"])
+            self.send_ok(message.sender)
+
+        elif message.type == MessageType.GET_DATA:
+            self.handle_get_data(message)
+
+        elif message.type == MessageType.RESPONSE_DATA:
+            logging.info(f"{self.env.now} - {self.id} RECEIVED DATA {message.value['data'].id}")
+
 
 
     def handle_join_request(self, message):
@@ -192,17 +300,29 @@ class Node:
         all_neighbors_ip = [*self.rightNeighbors, *self.leftNeighbors]
 
         all_neighbors_id_sorted = sorted([ DHT.network[ip].id for ip in all_neighbors_ip ])
-        next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest ) , all_neighbors_id_sorted[::-1][-1] )
-        next_node_ip = [ip for ip, node in DHT.network.items() if node.id == next_node_id][0]
+       
+        # reverse list to find first id that is smaller than id_dest, otherwise smallest neighbor
+        smaller_neighbors_iter = (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest )
 
-        # Remettre la condition d emort 
+        bigger_neighbors_iter = (neighbor_id for neighbor_id in all_neighbors_id_sorted if neighbor_id > id_dest )
 
-        # Avoid loop
-        # while (next_node_ip, next_node_id) in message.trace:
-        #     next_node_id = next( (neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest ) , all_neighbors_id_sorted[::-1][-1] )
-        #     next_node_ip = [ip for ip, node in DHT.network.items() if node.id == next_node_id][0]
-        print(list((neighbor_id for neighbor_id in all_neighbors_id_sorted[::-1] if neighbor_id < id_dest )))
-        
+        next_node_id = None
+        next_node_ip = None
+
+        order_cond = id_dest < self.id
+
+        while (next_node_ip, next_node_id) in message.trace or (next_node_ip, next_node_id) == (None, None) :
+            # Si on est déjà passé par le noeud choisi, on essaie dans l'autre sens
+            if (next_node_ip, next_node_id) in message.trace:
+                order_cond = id_dest > self.id
+
+            if order_cond:
+                next_node_id = next( smaller_neighbors_iter, all_neighbors_id_sorted[::-1][-1] )
+            else:
+                next_node_id = next( bigger_neighbors_iter, all_neighbors_id_sorted[-1] )
+
+            next_node_ip = [ip for ip, node in DHT.network.items() if node.id == next_node_id][0]
+      
         self.env.process(self.send_message(next_node_ip, message))
 
     def check_can_be_inserted(self, id_to_insert):

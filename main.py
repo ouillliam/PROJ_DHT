@@ -1,4 +1,4 @@
-from dht import Node, DHT, MessageType, Message
+from dht import Node, DHT, MessageType, Message, Data
 import simpy
 import logging
 
@@ -13,7 +13,10 @@ for i in range(num_nodes):
     env.run()
 node = dht.create_node(env, 50)
 env.run()
-node.deliver_message(20, Message(MessageType.DUMMY, node.ip, {}))
+dht.store_data(env, 'test', 25)
 env.run()
-
+node = node = dht.create_node(env, 17)
+env.run()
+node.get_data(25)
+env.run()
 print(dht)
