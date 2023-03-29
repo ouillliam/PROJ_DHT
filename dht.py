@@ -15,6 +15,8 @@ class MessageType(Enum):
     REPLICATE = 7
     GET_DATA = 8
     RESPONSE_DATA = 9
+    REMOVE_DATA = 10
+    DEPARTURE = 11
 
 
 class Message:
@@ -149,14 +151,15 @@ class Node:
         diff_self = abs(data.id - self.id)
         diff_neighbors = [ abs(data.id - id_neighbor) for id_neighbor in all_neighbors_id]
 
-        print(f"moi : {self.id}")
-
         if all([diff_self <= diff_n for diff_n in diff_neighbors]):
             return True
         
         return False
 
     def store(self, data):
+        if data in self.data.values():
+            logging.info(f"{self.env.now} - ({data.id}, {data.value}) data already present in {self.id}")
+            return 
         logging.info(f"{self.env.now} - {self.id} STORING ({data.id}, {data.value})")
         self.data[data.id] = data
 
@@ -171,7 +174,6 @@ class Node:
         id_data = message.value["id_dest"]
         ip_requester = message.value["ip_requester"]
 
-        print(f"{self.id} - {id_data}")
 
         if id_data in self.data.keys():
             self.env.process(self.send_message(ip_requester, Message(MessageType.RESPONSE_DATA, self.ip, {"data" : self.data[id_data]})))
@@ -218,25 +220,26 @@ class Node:
             return 
         ok = yield self.ok_received  #regarder valeur ok pour svaoir crash
 
-    def send_ok(self, ip_dest):
+    def send_ok(self, ip_dest, in_response_to = None):
         message = Message(MessageType.OK, self.ip)
         self.env.process(self.send_message(ip_dest, message))
+
     
 
     def receive_message(self, message):
         logging.debug(f"{self.env.now} - {self.ip} received {message.type.name} from {message.sender}")
         if message.type == MessageType.JOIN_REQUEST:
             self.handle_join_request(message)
-            self.send_ok(message.sender)
+            self.send_ok(message.sender, message)
 
         elif message.type == MessageType.UPDATE_NEIGHBORS:
             self.update_neighbors(**message.value)
-            self.send_ok(message.sender)
+            self.send_ok(message.sender, message)
 
         elif message.type == MessageType.CAN_JOIN:
             self.can_join.succeed()
             self.can_join = self.env.event()
-            self.send_ok(message.sender)
+            self.send_ok(message.sender, message)
            
         elif message.type == MessageType.OK:
             self.ok_received.succeed(message.sender)
@@ -247,21 +250,26 @@ class Node:
                 logging.debug(f"{self.env.now} - SUCCESSFUL DELIVERY TO {self.id} from {message.trace[0]}")
                 return
             self.route_message(message)
-            self.send_ok(message.sender)
+            self.send_ok(message.sender, message)
 
         elif message.type == MessageType.STORE_DATA:
             self.handle_store(message)
-            self.send_ok(message.sender)
+            self.send_ok(message.sender, message)
 
         elif message.type == MessageType.REPLICATE:
             self.store(message.value["data"])
-            self.send_ok(message.sender)
+            self.send_ok(message.sender, message)
 
         elif message.type == MessageType.GET_DATA:
             self.handle_get_data(message)
+            self.send_ok(message.sender, message)
 
         elif message.type == MessageType.RESPONSE_DATA:
             logging.info(f"{self.env.now} - {self.id} RECEIVED DATA {message.value['data'].id}")
+            
+        elif message.type == MessageType.DEPARTURE:
+            self.handle_departure(message)
+            self.send_ok(message.sender, message)
 
 
 
@@ -395,17 +403,45 @@ class Node:
         if "right" in kwargs:
             self.rightNeighbors = [kwargs["right"]]
         logging.debug(f"{self.env.now} - {self.ip} updated neighbors {kwargs}")
+        
+    
+    def get_replicated_data(self):
+        # Données répliquées sur moi = données sur moi et un voisin mais pas l'autre
+        return [ data for data in self.data.values() if ( data in DHT.network[self.leftNeighbors[0]].data.values() and data not in DHT.network[self.rightNeighbors[0]].data.values() ) or
+                            ( data not in DHT.network[self.leftNeighbors[0]].data.values() and data in DHT.network[self.rightNeighbors[0]].data.values()) ]
 
+        
+        
+    def handle_departure(self, message):
+        replicated_data = message.value["replicated_data"]
+        for data in replicated_data:
+           self.store(data)
+               
             
+
 
     def leave(self):
         logging.info(f"{self.env.now} - ({self.ip}, {self.id}) LEFT")
+        
         if len(DHT.network) != 1:
+            #Mettre à jour les voisins des voisins
             message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {"right" : self.rightNeighbors[0]})
             yield self.env.process(self.send_message(self.leftNeighbors[0], message))
 
             message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {"left" : self.leftNeighbors[0]})
             yield self.env.process(self.send_message(self.rightNeighbors[0], message))
-
-        DHT.network.pop(self.ip)
+            
+            # Restocker mes données répliquées
+            message = Message(MessageType.DEPARTURE, self.ip, {"replicated_data" : self.get_replicated_data()} )
+            yield self.env.process(self.send_message(self.leftNeighbors[0], message))
+            yield self.env.process(self.send_message(self.rightNeighbors[0], message))     
+            
+            # Restocker mes données originales
+            for data in (data for data in self.data.values() if data not in self.get_replicated_data()):
+                message = Message(MessageType.STORE_DATA, self.ip, {"id_dest" : data.id, "data" : data})
+                yield self.env.process(self.send_message(self.leftNeighbors[0], message))
+                
+                
+                
+        
         
