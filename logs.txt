@@ -1,154 +1,279 @@
-DEBUG - 0 - CREATING NODE FOR 36882 WITH VALUE 0
-DEBUG - 0 - 36882 trying to join network of length 0
-DEBUG - 0 - CREATING NODE FOR 41918 WITH VALUE 10
-DEBUG - 0 - 41918 trying to join network of length 1
-DEBUG - 0 - 10 sending JOIN_REQUEST to 36882
-DEBUG - 1 - 36882 received JOIN_REQUEST from 41918
-DEBUG - 1 - 36882 updated neighbors {'left': 41918, 'right': 41918}
-DEBUG - 1 - 0 sending UPDATE_NEIGHBORS to 41918
-DEBUG - 1 - 0 sending CAN_JOIN to 41918
-DEBUG - 1 - 0 sending OK to 41918
-DEBUG - 2 - 41918 received UPDATE_NEIGHBORS from 36882
-DEBUG - 2 - 41918 updated neighbors {'left': 36882, 'right': 36882}
-DEBUG - 2 - 10 sending OK to 36882
-DEBUG - 2 - 41918 received CAN_JOIN from 36882
-DEBUG - 2 - 10 sending OK to 36882
-DEBUG - 2 - 41918 received OK from 36882
-INFO - 2 - JOIN : (41918, 10)
-DEBUG - 3 - 36882 received OK from 41918
-DEBUG - 3 - 36882 received OK from 41918
-DEBUG - 3 - CREATING NODE FOR 35275 WITH VALUE 20
-DEBUG - 3 - 35275 trying to join network of length 2
-DEBUG - 3 - 20 sending JOIN_REQUEST to 41918
-DEBUG - 4 - 41918 received JOIN_REQUEST from 35275
-DEBUG - 4 - 41918 updated neighbors {'left': 35275}
-DEBUG - 4 - 10 sending UPDATE_NEIGHBORS to 36882
-DEBUG - 4 - 10 sending UPDATE_NEIGHBORS to 35275
-DEBUG - 4 - 10 sending CAN_JOIN to 35275
-DEBUG - 4 - 10 sending OK to 35275
-DEBUG - 5 - 36882 received UPDATE_NEIGHBORS from 41918
-DEBUG - 5 - 36882 updated neighbors {'right': 35275}
-DEBUG - 5 - 0 sending OK to 41918
-DEBUG - 5 - 35275 received UPDATE_NEIGHBORS from 41918
-DEBUG - 5 - 35275 updated neighbors {'left': 36882, 'right': 41918}
-DEBUG - 5 - 20 sending OK to 41918
-DEBUG - 5 - 35275 received CAN_JOIN from 41918
-DEBUG - 5 - 20 sending OK to 41918
-DEBUG - 5 - 35275 received OK from 41918
-INFO - 5 - JOIN : (35275, 20)
-DEBUG - 6 - 41918 received OK from 36882
-DEBUG - 6 - 41918 received OK from 35275
-DEBUG - 6 - 41918 received OK from 35275
-DEBUG - 6 - CREATING NODE FOR 89306 WITH VALUE 30
-DEBUG - 6 - 89306 trying to join network of length 3
-DEBUG - 6 - 30 sending JOIN_REQUEST to 36882
-DEBUG - 7 - 36882 received JOIN_REQUEST from 89306
-DEBUG - 7 - 36882 updated neighbors {'right': 89306}
-DEBUG - 7 - 0 sending UPDATE_NEIGHBORS to 35275
-DEBUG - 7 - 0 sending UPDATE_NEIGHBORS to 89306
-DEBUG - 7 - 0 sending CAN_JOIN to 89306
-DEBUG - 7 - 0 sending OK to 89306
-DEBUG - 8 - 35275 received UPDATE_NEIGHBORS from 36882
-DEBUG - 8 - 35275 updated neighbors {'left': 89306}
-DEBUG - 8 - 20 sending OK to 36882
-DEBUG - 8 - 89306 received UPDATE_NEIGHBORS from 36882
-DEBUG - 8 - 89306 updated neighbors {'left': 36882, 'right': 35275}
-DEBUG - 8 - 30 sending OK to 36882
-DEBUG - 8 - 89306 received CAN_JOIN from 36882
-DEBUG - 8 - 30 sending OK to 36882
-DEBUG - 8 - 89306 received OK from 36882
-INFO - 8 - JOIN : (89306, 30)
-DEBUG - 9 - 36882 received OK from 35275
-DEBUG - 9 - 36882 received OK from 89306
-DEBUG - 9 - 36882 received OK from 89306
-DEBUG - 9 - CREATING NODE FOR 6847 WITH VALUE 40
-DEBUG - 9 - 6847 trying to join network of length 4
-DEBUG - 9 - 40 sending JOIN_REQUEST to 35275
-DEBUG - 10 - 35275 received JOIN_REQUEST from 6847
-DEBUG - 10 - 20 sending JOIN_REQUEST to 89306
-DEBUG - 10 - 20 sending OK to 6847
-DEBUG - 11 - 89306 received JOIN_REQUEST from 6847
-DEBUG - 11 - 89306 updated neighbors {'left': 6847}
-DEBUG - 11 - 30 sending UPDATE_NEIGHBORS to 36882
-DEBUG - 11 - 30 sending UPDATE_NEIGHBORS to 6847
-DEBUG - 11 - 30 sending CAN_JOIN to 6847
-DEBUG - 11 - 30 sending OK to 6847
-DEBUG - 11 - 6847 received OK from 35275
-DEBUG - 12 - 36882 received UPDATE_NEIGHBORS from 89306
-DEBUG - 12 - 36882 updated neighbors {'right': 6847}
-DEBUG - 12 - 0 sending OK to 89306
-DEBUG - 12 - 6847 received UPDATE_NEIGHBORS from 89306
-DEBUG - 12 - 6847 updated neighbors {'left': 36882, 'right': 89306}
-DEBUG - 12 - 40 sending OK to 89306
-DEBUG - 12 - 6847 received CAN_JOIN from 89306
-DEBUG - 12 - 40 sending OK to 89306
-DEBUG - 12 - 6847 received OK from 89306
-INFO - 12 - JOIN : (6847, 40)
-DEBUG - 13 - 89306 received OK from 36882
-DEBUG - 13 - 89306 received OK from 6847
-DEBUG - 13 - 89306 received OK from 6847
-DEBUG - 13 - CREATING NODE FOR 34041 WITH VALUE 50
-DEBUG - 13 - 34041 trying to join network of length 5
-DEBUG - 13 - 50 sending JOIN_REQUEST to 6847
-DEBUG - 14 - 6847 received JOIN_REQUEST from 34041
-DEBUG - 14 - 6847 updated neighbors {'left': 34041}
-DEBUG - 14 - 40 sending UPDATE_NEIGHBORS to 36882
-DEBUG - 14 - 40 sending UPDATE_NEIGHBORS to 34041
-DEBUG - 14 - 40 sending CAN_JOIN to 34041
-DEBUG - 14 - 40 sending OK to 34041
-DEBUG - 15 - 36882 received UPDATE_NEIGHBORS from 6847
-DEBUG - 15 - 36882 updated neighbors {'right': 34041}
-DEBUG - 15 - 0 sending OK to 6847
-DEBUG - 15 - 34041 received UPDATE_NEIGHBORS from 6847
-DEBUG - 15 - 34041 updated neighbors {'left': 36882, 'right': 6847}
-DEBUG - 15 - 50 sending OK to 6847
-DEBUG - 15 - 34041 received CAN_JOIN from 6847
-DEBUG - 15 - 50 sending OK to 6847
-DEBUG - 15 - 34041 received OK from 6847
-INFO - 15 - JOIN : (34041, 50)
-DEBUG - 16 - 6847 received OK from 36882
-DEBUG - 16 - 6847 received OK from 34041
-DEBUG - 16 - 6847 received OK from 34041
-DEBUG - 16 - TRYING TO STORE 25 WITH VALUE test
-DEBUG - 16 - 40 sending STORE_DATA to 89306
-DEBUG - 17 - 89306 received STORE_DATA from 6847
-INFO - 17 - 30 STORING (25, test)
-DEBUG - 17 - 30 sending REPLICATE to 6847
-DEBUG - 17 - 30 sending REPLICATE to 35275
-DEBUG - 17 - 30 sending OK to 6847
-DEBUG - 18 - 6847 received REPLICATE from 89306
-INFO - 18 - 40 STORING (25, test)
-DEBUG - 18 - 40 sending OK to 89306
-DEBUG - 18 - 35275 received REPLICATE from 89306
-INFO - 18 - 20 STORING (25, test)
-DEBUG - 18 - 20 sending OK to 89306
-DEBUG - 18 - 6847 received OK from 89306
-DEBUG - 19 - 89306 received OK from 6847
-DEBUG - 19 - 89306 received OK from 35275
-DEBUG - 19 - CREATING NODE FOR 48636 WITH VALUE 17
-DEBUG - 19 - 48636 trying to join network of length 6
-DEBUG - 19 - 17 sending JOIN_REQUEST to 35275
-DEBUG - 20 - 35275 received JOIN_REQUEST from 48636
-DEBUG - 20 - 35275 updated neighbors {'right': 48636}
-DEBUG - 20 - 20 sending UPDATE_NEIGHBORS to 41918
-DEBUG - 20 - 20 sending UPDATE_NEIGHBORS to 48636
-DEBUG - 20 - 20 sending CAN_JOIN to 48636
-DEBUG - 20 - 20 sending OK to 48636
-DEBUG - 21 - 41918 received UPDATE_NEIGHBORS from 35275
-DEBUG - 21 - 41918 updated neighbors {'left': 48636}
-DEBUG - 21 - 10 sending OK to 35275
-DEBUG - 21 - 48636 received UPDATE_NEIGHBORS from 35275
-DEBUG - 21 - 48636 updated neighbors {'left': 35275, 'right': 41918}
-DEBUG - 21 - 17 sending OK to 35275
-DEBUG - 21 - 48636 received CAN_JOIN from 35275
-DEBUG - 21 - 17 sending OK to 35275
-DEBUG - 21 - 48636 received OK from 35275
-INFO - 21 - JOIN : (48636, 17)
-DEBUG - 22 - 35275 received OK from 41918
-DEBUG - 22 - 35275 received OK from 48636
-DEBUG - 22 - 35275 received OK from 48636
-DEBUG - 22 - 17 sending GET_DATA to 35275
-DEBUG - 23 - 35275 received GET_DATA from 48636
-DEBUG - 23 - 20 sending RESPONSE_DATA to 48636
-DEBUG - 24 - 48636 received RESPONSE_DATA from 35275
-INFO - 24 - 17 RECEIVED DATA 25
+DEBUG - 0 - CREATING NODE FOR 54805 WITH VALUE 0
+DEBUG - 0 - (54805, 0) trying to join network of length 0
+DEBUG - 0 - CREATING NODE FOR 70867 WITH VALUE 10
+DEBUG - 0 - (70867, 10) trying to join network of length 1
+DEBUG - 0 - 10 sending JOIN_REQUEST to 0
+DEBUG - 1 - 0 received JOIN_REQUEST from 10
+DEBUG - 1 - 54805 updated neighbors {'left': 70867, 'right': 70867}
+DEBUG - 1 - 0 sending UPDATE_NEIGHBORS to 10
+DEBUG - 1 - 0 sending CAN_JOIN to 10
+DEBUG - 1 - 0 sending OK to 10
+DEBUG - 2 - 10 received UPDATE_NEIGHBORS from 0
+DEBUG - 2 - 70867 updated neighbors {'left': 54805, 'right': 54805}
+DEBUG - 2 - 10 sending OK to 0
+DEBUG - 2 - 10 received CAN_JOIN from 0
+DEBUG - 2 - 10 sending OK to 0
+DEBUG - 2 - 10 received OK from 0
+INFO - 2 - JOIN : (70867, 10)
+DEBUG - 3 - 0 received OK from 10
+DEBUG - 3 - 0 received OK from 10
+DEBUG - 3 - CREATING NODE FOR 25010 WITH VALUE 20
+DEBUG - 3 - (25010, 20) trying to join network of length 2
+DEBUG - 3 - 20 sending JOIN_REQUEST to 10
+DEBUG - 4 - 10 received JOIN_REQUEST from 20
+DEBUG - 4 - 70867 updated neighbors {'left': 25010}
+DEBUG - 4 - 10 sending UPDATE_NEIGHBORS to 0
+DEBUG - 4 - 10 sending UPDATE_NEIGHBORS to 20
+DEBUG - 4 - 10 sending CAN_JOIN to 20
+DEBUG - 4 - 10 sending OK to 20
+DEBUG - 5 - 0 received UPDATE_NEIGHBORS from 10
+DEBUG - 5 - 54805 updated neighbors {'right': 25010}
+DEBUG - 5 - 0 sending OK to 10
+DEBUG - 5 - 20 received UPDATE_NEIGHBORS from 10
+DEBUG - 5 - 25010 updated neighbors {'left': 54805, 'right': 70867}
+DEBUG - 5 - 20 sending OK to 10
+DEBUG - 5 - 20 received CAN_JOIN from 10
+DEBUG - 5 - 20 sending OK to 10
+DEBUG - 5 - 20 received OK from 10
+INFO - 5 - JOIN : (25010, 20)
+DEBUG - 6 - 10 received OK from 0
+DEBUG - 6 - 10 received OK from 20
+DEBUG - 6 - 10 received OK from 20
+DEBUG - 6 - CREATING NODE FOR 42058 WITH VALUE 30
+DEBUG - 6 - (42058, 30) trying to join network of length 3
+DEBUG - 6 - 30 sending JOIN_REQUEST to 10
+DEBUG - 7 - 10 received JOIN_REQUEST from 30
+DEBUG - 7 - 10 sending JOIN_REQUEST to 20
+DEBUG - 7 - 10 sending OK to 30
+DEBUG - 8 - 20 received JOIN_REQUEST from 30
+DEBUG - 8 - 25010 updated neighbors {'left': 42058}
+DEBUG - 8 - 20 sending UPDATE_NEIGHBORS to 0
+DEBUG - 8 - 20 sending UPDATE_NEIGHBORS to 30
+DEBUG - 8 - 20 sending CAN_JOIN to 30
+DEBUG - 8 - 20 sending OK to 30
+DEBUG - 8 - 30 received OK from 10
+DEBUG - 9 - 0 received UPDATE_NEIGHBORS from 20
+DEBUG - 9 - 54805 updated neighbors {'right': 42058}
+DEBUG - 9 - 0 sending OK to 20
+DEBUG - 9 - 30 received UPDATE_NEIGHBORS from 20
+DEBUG - 9 - 42058 updated neighbors {'left': 54805, 'right': 25010}
+DEBUG - 9 - 30 sending OK to 20
+DEBUG - 9 - 30 received CAN_JOIN from 20
+DEBUG - 9 - 30 sending OK to 20
+DEBUG - 9 - 30 received OK from 20
+INFO - 9 - JOIN : (42058, 30)
+DEBUG - 10 - 20 received OK from 0
+DEBUG - 10 - 20 received OK from 30
+DEBUG - 10 - 20 received OK from 30
+DEBUG - 10 - CREATING NODE FOR 76841 WITH VALUE 40
+DEBUG - 10 - (76841, 40) trying to join network of length 4
+DEBUG - 10 - 40 sending JOIN_REQUEST to 20
+DEBUG - 11 - 20 received JOIN_REQUEST from 40
+DEBUG - 11 - 20 sending JOIN_REQUEST to 30
+DEBUG - 11 - 20 sending OK to 40
+DEBUG - 12 - 30 received JOIN_REQUEST from 40
+DEBUG - 12 - 42058 updated neighbors {'left': 76841}
+DEBUG - 12 - 30 sending UPDATE_NEIGHBORS to 0
+DEBUG - 12 - 30 sending UPDATE_NEIGHBORS to 40
+DEBUG - 12 - 30 sending CAN_JOIN to 40
+DEBUG - 12 - 30 sending OK to 40
+DEBUG - 12 - 40 received OK from 20
+DEBUG - 13 - 0 received UPDATE_NEIGHBORS from 30
+DEBUG - 13 - 54805 updated neighbors {'right': 76841}
+DEBUG - 13 - 0 sending OK to 30
+DEBUG - 13 - 40 received UPDATE_NEIGHBORS from 30
+DEBUG - 13 - 76841 updated neighbors {'left': 54805, 'right': 42058}
+DEBUG - 13 - 40 sending OK to 30
+DEBUG - 13 - 40 received CAN_JOIN from 30
+DEBUG - 13 - 40 sending OK to 30
+DEBUG - 13 - 40 received OK from 30
+INFO - 13 - JOIN : (76841, 40)
+DEBUG - 14 - 30 received OK from 0
+DEBUG - 14 - 30 received OK from 40
+DEBUG - 14 - 30 received OK from 40
+DEBUG - 14 - CREATING NODE FOR 98039 WITH VALUE 50
+DEBUG - 14 - (98039, 50) trying to join network of length 5
+DEBUG - 14 - 50 sending JOIN_REQUEST to 30
+DEBUG - 15 - 30 received JOIN_REQUEST from 50
+DEBUG - 15 - 30 sending JOIN_REQUEST to 40
+DEBUG - 15 - 30 sending OK to 50
+DEBUG - 16 - 40 received JOIN_REQUEST from 50
+DEBUG - 16 - 76841 updated neighbors {'left': 98039}
+DEBUG - 16 - 40 sending UPDATE_NEIGHBORS to 0
+DEBUG - 16 - 40 sending UPDATE_NEIGHBORS to 50
+DEBUG - 16 - 40 sending CAN_JOIN to 50
+DEBUG - 16 - 40 sending OK to 50
+DEBUG - 16 - 50 received OK from 30
+DEBUG - 17 - 0 received UPDATE_NEIGHBORS from 40
+DEBUG - 17 - 54805 updated neighbors {'right': 98039}
+DEBUG - 17 - 0 sending OK to 40
+DEBUG - 17 - 50 received UPDATE_NEIGHBORS from 40
+DEBUG - 17 - 98039 updated neighbors {'left': 54805, 'right': 76841}
+DEBUG - 17 - 50 sending OK to 40
+DEBUG - 17 - 50 received CAN_JOIN from 40
+DEBUG - 17 - 50 sending OK to 40
+DEBUG - 17 - 50 received OK from 40
+INFO - 17 - JOIN : (98039, 50)
+DEBUG - 18 - 40 received OK from 0
+DEBUG - 18 - 40 received OK from 50
+DEBUG - 18 - 40 received OK from 50
+DEBUG - 18 - CREATING NODE FOR 35588 WITH VALUE 17
+DEBUG - 18 - (35588, 17) trying to join network of length 6
+DEBUG - 18 - 17 sending JOIN_REQUEST to 30
+DEBUG - 19 - 30 received JOIN_REQUEST from 17
+DEBUG - 19 - 30 sending JOIN_REQUEST to 20
+DEBUG - 19 - 30 sending OK to 17
+DEBUG - 20 - 20 received JOIN_REQUEST from 17
+DEBUG - 20 - 25010 updated neighbors {'right': 35588}
+DEBUG - 20 - 20 sending UPDATE_NEIGHBORS to 10
+DEBUG - 20 - 20 sending UPDATE_NEIGHBORS to 17
+DEBUG - 20 - 20 sending CAN_JOIN to 17
+DEBUG - 20 - 20 sending OK to 17
+DEBUG - 20 - 17 received OK from 30
+DEBUG - 21 - 10 received UPDATE_NEIGHBORS from 20
+DEBUG - 21 - 70867 updated neighbors {'left': 35588}
+DEBUG - 21 - 10 sending OK to 20
+DEBUG - 21 - 17 received UPDATE_NEIGHBORS from 20
+DEBUG - 21 - 35588 updated neighbors {'left': 25010, 'right': 70867}
+DEBUG - 21 - 17 sending OK to 20
+DEBUG - 21 - 17 received CAN_JOIN from 20
+DEBUG - 21 - 17 sending OK to 20
+DEBUG - 21 - 17 received OK from 20
+INFO - 21 - JOIN : (35588, 17)
+DEBUG - 22 - 20 received OK from 10
+DEBUG - 22 - 20 received OK from 17
+DEBUG - 22 - 20 received OK from 17
+DEBUG - 22 - TRYING TO STORE 24 WITH VALUE test
+DEBUG - 22 - 30 sending STORE_DATA to 20
+DEBUG - 23 - 20 received STORE_DATA from 30
+INFO - 23 - 20 STORING (24, test)
+DEBUG - 23 - 20 sending REPLICATE to 30
+DEBUG - 23 - 20 sending REPLICATE to 17
+DEBUG - 23 - 20 sending OK to 30
+DEBUG - 24 - 30 received REPLICATE from 20
+INFO - 24 - 30 STORING (24, test)
+DEBUG - 24 - 30 sending OK to 20
+DEBUG - 24 - 17 received REPLICATE from 20
+INFO - 24 - 17 STORING (24, test)
+DEBUG - 24 - 17 sending OK to 20
+DEBUG - 24 - 30 received OK from 20
+DEBUG - 25 - 20 received OK from 30
+DEBUG - 25 - 20 received OK from 17
+DEBUG - 25 - TRYING TO STORE 14 WITH VALUE fefe
+DEBUG - 25 - 17 sending GET_DATA to 20
+DEBUG - 25 - 10 sending STORE_DATA to 17
+DEBUG - 26 - 20 received GET_DATA from 17
+DEBUG - 26 - 20 sending RESPONSE_DATA to 17
+DEBUG - 26 - 20 sending OK to 17
+DEBUG - 26 - 17 received STORE_DATA from 10
+INFO - 26 - 17 STORING (14, fefe)
+DEBUG - 26 - 17 sending REPLICATE to 20
+DEBUG - 26 - 17 sending REPLICATE to 10
+DEBUG - 26 - 17 sending OK to 10
+DEBUG - 27 - 17 received RESPONSE_DATA from 20
+INFO - 27 - 17 RECEIVED DATA 24
+DEBUG - 27 - 17 received OK from 20
+DEBUG - 27 - 20 received REPLICATE from 17
+INFO - 27 - 20 STORING (14, fefe)
+DEBUG - 27 - 20 sending OK to 17
+DEBUG - 27 - 10 received REPLICATE from 17
+INFO - 27 - 10 STORING (14, fefe)
+DEBUG - 27 - 10 sending OK to 17
+DEBUG - 27 - 10 received OK from 17
+DEBUG - 28 - 17 received OK from 20
+DEBUG - 28 - 17 received OK from 10
+INFO - 28 - (35588, 17) LEFT
+DEBUG - 28 - 17 sending UPDATE_NEIGHBORS to 20
+DEBUG - 29 - 20 received UPDATE_NEIGHBORS from 17
+DEBUG - 29 - 25010 updated neighbors {'right': 70867}
+DEBUG - 29 - 20 sending OK to 17
+DEBUG - 30 - 17 received OK from 20
+DEBUG - 30 - 17 sending UPDATE_NEIGHBORS to 10
+DEBUG - 31 - 10 received UPDATE_NEIGHBORS from 17
+DEBUG - 31 - 70867 updated neighbors {'left': 25010}
+DEBUG - 31 - 10 sending OK to 17
+DEBUG - 32 - 17 received OK from 10
+DEBUG - 32 - 17 sending DEPARTURE to 20
+DEBUG - 33 - 20 received DEPARTURE from 17
+INFO - 33 - (24, test) data already present in 20
+DEBUG - 33 - 20 sending OK to 17
+DEBUG - 34 - 17 received OK from 20
+DEBUG - 34 - 17 sending DEPARTURE to 10
+DEBUG - 35 - 10 received DEPARTURE from 17
+INFO - 35 - 10 STORING (24, test)
+DEBUG - 35 - 10 sending OK to 17
+DEBUG - 36 - 17 received OK from 10
+DEBUG - 36 - 17 sending STORE_DATA to 20
+DEBUG - 37 - 20 received STORE_DATA from 17
+INFO - 37 - (24, test) data already present in 20
+DEBUG - 37 - 20 sending REPLICATE to 30
+DEBUG - 37 - 20 sending REPLICATE to 10
+DEBUG - 37 - 20 sending OK to 17
+DEBUG - 38 - 30 received REPLICATE from 20
+INFO - 38 - (24, test) data already present in 30
+DEBUG - 38 - 30 sending OK to 20
+DEBUG - 38 - 10 received REPLICATE from 20
+INFO - 38 - (24, test) data already present in 10
+DEBUG - 38 - 10 sending OK to 20
+DEBUG - 38 - 17 received OK from 20
+DEBUG - 38 - 17 sending STORE_DATA to 20
+DEBUG - 39 - 20 received OK from 30
+DEBUG - 39 - 20 received OK from 10
+DEBUG - 39 - 20 received STORE_DATA from 17
+DEBUG - 39 - 20 sending STORE_DATA to 10
+DEBUG - 39 - 20 sending OK to 17
+DEBUG - 40 - 10 received STORE_DATA from 17
+INFO - 40 - (14, fefe) data already present in 10
+DEBUG - 40 - 10 sending REPLICATE to 20
+DEBUG - 40 - 10 sending REPLICATE to 0
+DEBUG - 40 - 10 sending OK to 17
+DEBUG - 40 - 17 received OK from 20
+DEBUG - 41 - 20 received REPLICATE from 10
+INFO - 41 - (14, fefe) data already present in 20
+DEBUG - 41 - 20 sending OK to 10
+DEBUG - 41 - 0 received REPLICATE from 10
+INFO - 41 - 0 STORING (14, fefe)
+DEBUG - 41 - 0 sending OK to 10
+DEBUG - 41 - 17 received OK from 10
+DEBUG - 42 - 10 received OK from 20
+DEBUG - 42 - 10 received OK from 0
+DEBUG - 42 - CREATING NODE FOR 30689 WITH VALUE 13
+DEBUG - 42 - (30689, 13) trying to join network of length 6
+DEBUG - 42 - 13 sending JOIN_REQUEST to 10
+DEBUG - 43 - 10 received JOIN_REQUEST from 13
+DEBUG - 43 - 70867 updated neighbors {'left': 30689}
+DEBUG - 43 - 10 sending UPDATE_NEIGHBORS to 20
+DEBUG - 43 - 10 sending UPDATE_NEIGHBORS to 13
+DEBUG - 43 - 10 sending CAN_JOIN to 13
+DEBUG - 43 - 10 sending OK to 13
+DEBUG - 44 - 20 received UPDATE_NEIGHBORS from 10
+DEBUG - 44 - 25010 updated neighbors {'right': 30689}
+DEBUG - 44 - 20 sending OK to 10
+DEBUG - 44 - 13 received UPDATE_NEIGHBORS from 10
+DEBUG - 44 - 30689 updated neighbors {'left': 25010, 'right': 70867}
+DEBUG - 44 - 13 sending OK to 10
+DEBUG - 44 - 13 received CAN_JOIN from 10
+DEBUG - 44 - 13 sending OK to 10
+DEBUG - 44 - 13 received OK from 10
+DEBUG - 44 - (30689, 13) RELOCATING DATA 14
+DEBUG - 44 - (30689, 13) RELOCATING DATA 14
+INFO - 44 - JOIN : (30689, 13)
+DEBUG - 44 - 13 sending RELOCATE to 20
+DEBUG - 44 - 13 sending RELOCATE to 10
+DEBUG - 45 - 10 received OK from 20
+DEBUG - 45 - 10 received OK from 13
+DEBUG - 45 - 10 received OK from 13
+DEBUG - 45 - 20 received RELOCATE from 13
+DEBUG - 45 - 20 sending RELOCATE to 30
+DEBUG - 45 - 20 sending OK to 13
+DEBUG - 45 - 10 received RELOCATE from 13
+DEBUG - 45 - 10 sending RELOCATE to 0
+DEBUG - 45 - 10 sending OK to 13
+DEBUG - 46 - 30 received RELOCATE from 13
+DEBUG - 46 - 30 sending OK to 13
+DEBUG - 46 - 13 received OK from 20
+DEBUG - 46 - 0 received RELOCATE from 13
+DEBUG - 46 - 0 sending OK to 13
+DEBUG - 46 - 13 received OK from 10
+DEBUG - 47 - 13 received OK from 30
+DEBUG - 47 - 13 received OK from 0

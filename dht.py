@@ -17,6 +17,8 @@ class MessageType(Enum):
     RESPONSE_DATA = 9
     DELETE_DATA = 10
     DEPARTURE = 11
+    RELOCATE = 12
+
 
 
 class Message:
@@ -44,6 +46,7 @@ class Data:
             new_id = random.randint(0,1000)
             
         return new_id
+
 
 
 class DHT:
@@ -168,16 +171,11 @@ class Node:
         message = Message(MessageType.GET_DATA, self.ip, {"id_dest" : id_data, "ip_requester" : self.ip})
         self.route_message(message)
 
-    def handle_get_data(self, message):
-        # Prendre en compte id inexistant ?
-        id_data = message.value["id_dest"]
-        ip_requester = message.value["ip_requester"]
 
     def handle_get_data(self, message):
         # Prendre en compte id inexistant ?
         id_data = message.value["id_dest"]
         ip_requester = message.value["ip_requester"]
-
 
         if id_data in self.data.keys():
             self.env.process(self.send_message(ip_requester, Message(MessageType.RESPONSE_DATA, self.ip, {"data" : self.data[id_data]})))
@@ -206,22 +204,23 @@ class Node:
 
         join_delay = self.env.timeout(1)
         yield self.can_join & join_delay
-        self.relocate_fitting_data()
+        # TODO : Relocate fitting data, Supprimer les données répliquées de mon ancien voisin, Répliquer mes données sur mon nouveau voisin
+        #self.relocate_fitting_data()
         logging.info(f"{self.env.now} - JOIN : ({self.ip}, {self.id})")
    
-    def relocate_fitting_data(self):
-        adjacent_neighbors_ip = [self.leftNeighbors[0], self.rightNeighbors[0]]
-        adjacent_neighbors = [DHT.network[ip] for ip in adjacent_neighbors_ip]
-        for neighbor in adjacent_neighbors:
-            # Itérer sur les données originales du voisin
-            for data in (data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()):
-                if self.check_if_can_store(data):
-                    logging.debug(f"{self.env.now} - ({self.ip}, {self.id}) RELOCATING DATA {data.id}")
-                    self.env.process(self.send_message(neighbor.ip, Message(MessageType.DELETE_DATA, self.ip, {"id_data" : data.id})))
-                    self.store(data)
-                    message_replicate = Message(MessageType.REPLICATE, self.ip, {"data" : data})
-                    self.env.process(self.send_message(self.leftNeighbors[0], message_replicate))
-                    self.env.process(self.send_message(self.rightNeighbors[0], message_replicate))
+    # def relocate_fitting_data(self):
+    #     adjacent_neighbors_ip = [self.leftNeighbors[0], self.rightNeighbors[0]]
+    #     adjacent_neighbors = [DHT.network[ip] for ip in adjacent_neighbors_ip]
+    #     for neighbor in adjacent_neighbors:
+    #         # Itérer sur les données originales du voisin
+    #         # print((data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()))
+    #         for data in (data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()):
+    #             if self.check_if_can_store(data):
+    #                 logging.debug(f"{self.env.now} - ({self.ip}, {self.id}) RELOCATING DATA {data.id}")
+    #                 self.data[data.id] = data
+    #                 print(f"J'envoie relocate a {neighbor.id}")
+    #                 self.env.process(self.send_message(neighbor.ip, Message(MessageType.RELOCATE, self.ip, {"id_data" : data.id})))
+                    
 
 
 
@@ -295,19 +294,27 @@ class Node:
             self.handle_delete_data(message)
             self.send_ok(message.sender, message)
 
+        elif message.type == MessageType.RELOCATE:
+            self.handle_relocate(message)
+            self.send_ok(message.sender, message)
+
+
+    def handle_relocate(self, message):
+        print(f"RELOCATE {self.id}")
+        id_data = message.value["id_data"]
+        if len(message.trace) >= 2:
+            print("OUI")
+            if id_data in self.data.keys():
+                self.data.pop(id_data)
+        elif len(message.trace) == 1:
+            ip_dest = self.leftNeighbors[0] if self.leftNeighbors[0] != message.trace[-1][0] else self.rightNeighbors[0]
+            self.env.process(self.send_message(ip_dest, message))
+
 
     def handle_delete_data(self, message):
         id_data = message.value["id_data"]
-        # Si donnée originale : clean la replication
-        #BUG ICI
-        print(f"{self.id} JE DELETE {id_data}")
-        if id_data not in [ data.id for data in self.get_replicated_data() ]:
-            message_delete = Message(MessageType.DELETE_DATA, self.ip, {"id_data" : id_data})
-            # Trouver le bon voisin qui doit désormais supprimer sa réplication
-            dest = self.leftNeighbors[0] if self.leftNeighbors[0] != message.sender else self.rightNeighbors[0]
-            self.env.process(self.send_message(dest, message_delete))
         self.data.pop(id_data)
-        print(f"{self.data}")
+
 
 
 
@@ -409,6 +416,7 @@ class Node:
 
         
     def insert_neighbor(self, direction, ip_to_insert):
+      
 
         # Contacter mon neighbor
         past_neighbor = None
@@ -421,25 +429,30 @@ class Node:
             past_neighbor = self.rightNeighbors[0]
             direction_neighbor = "left"
 
+        past_neighbor = DHT.network[past_neighbor]
+
         message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, {direction_neighbor : ip_to_insert})    
-        self.env.process(self.send_message(past_neighbor, message))
+        self.env.process(self.send_message(past_neighbor.ip, message))
 
         # Update mes neighbors
         kwargs = {}
         kwargs[direction] = ip_to_insert
         self.update_neighbors(**kwargs)  
+        
 
         # Contacter le noeud qui rejoint
-        neighbors_new_node = { "left" : past_neighbor, "right" : self.ip} if direction == "left" else { "left" : self.ip, "right" : past_neighbor}
+        neighbors_new_node = { "left" : past_neighbor.ip, "right" : self.ip} if direction == "left" else { "left" : self.ip, "right" : past_neighbor.ip}
         message = Message(MessageType.UPDATE_NEIGHBORS, self.ip, neighbors_new_node)    
         self.env.process(self.send_message(ip_to_insert, message))
         
 
     def update_neighbors(self, **kwargs):
+
         if "left" in kwargs:
             self.leftNeighbors = [kwargs["left"]]
         if "right" in kwargs:
             self.rightNeighbors = [kwargs["right"]]
+
         logging.debug(f"{self.env.now} - {self.ip} updated neighbors {kwargs}")
         
     
