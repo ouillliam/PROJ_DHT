@@ -15,7 +15,7 @@ class MessageType(Enum):
     REPLICATE = 7
     GET_DATA = 8
     RESPONSE_DATA = 9
-    REMOVE_DATA = 10
+    DELETE_DATA = 10
     DEPARTURE = 11
 
 
@@ -59,10 +59,10 @@ class DHT:
         start_node = list(DHT.network.values())[0]
         string = ""
         node = start_node
-        string += f"{node.id}<-->"
+        string += f"{node.id}{list(node.data.keys())}<-->"
         while DHT.network[node.rightNeighbors[0]] != start_node:
             node = DHT.network[node.rightNeighbors[0]]
-            string += f"{node.id}<-->"
+            string += f"{node.id}{list(node.data.keys())}<-->"
         
         return string
 
@@ -168,6 +168,10 @@ class Node:
         message = Message(MessageType.GET_DATA, self.ip, {"id_dest" : id_data, "ip_requester" : self.ip})
         self.route_message(message)
 
+    def handle_get_data(self, message):
+        # Prendre en compte id inexistant ?
+        id_data = message.value["id_dest"]
+        ip_requester = message.value["ip_requester"]
 
     def handle_get_data(self, message):
         # Prendre en compte id inexistant ?
@@ -183,7 +187,7 @@ class Node:
 
     def join(self, ips, ip_debug = None):
 
-        logging.debug(f"{self.env.now} - {self.ip} trying to join network of length {len(DHT.network) - 1}")
+        logging.debug(f"{self.env.now} - ({self.ip}, {self.id}) trying to join network of length {len(DHT.network) - 1}")
 
         if len(ips) == 1: # Cas particulier 1 noeud
             self.leftNeighbors = [self.ip]
@@ -201,18 +205,34 @@ class Node:
         self.env.process(self.send_message(ip_to_contact, message))
 
         join_delay = self.env.timeout(1)
-        yield self.can_join & join_delay # Join delay
+        yield self.can_join & join_delay
+        self.relocate_fitting_data()
         logging.info(f"{self.env.now} - JOIN : ({self.ip}, {self.id})")
    
+    def relocate_fitting_data(self):
+        adjacent_neighbors_ip = [self.leftNeighbors[0], self.rightNeighbors[0]]
+        adjacent_neighbors = [DHT.network[ip] for ip in adjacent_neighbors_ip]
+        for neighbor in adjacent_neighbors:
+            # Itérer sur les données originales du voisin
+            for data in (data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()):
+                if self.check_if_can_store(data):
+                    logging.debug(f"{self.env.now} - ({self.ip}, {self.id}) RELOCATING DATA {data.id}")
+                    self.env.process(self.send_message(neighbor.ip, Message(MessageType.DELETE_DATA, self.ip, {"id_data" : data.id})))
+                    self.store(data)
+                    message_replicate = Message(MessageType.REPLICATE, self.ip, {"data" : data})
+                    self.env.process(self.send_message(self.leftNeighbors[0], message_replicate))
+                    self.env.process(self.send_message(self.rightNeighbors[0], message_replicate))
+
+
 
     def deliver_message(self, id_dest, message):
-        logging.debug(f"{self.env.now} - {self.id} DELIVERING {message.type.name} to {id_dest}")
+        logging.debug(f"{self.env.now} - {self.id} DELIVERING {message.type.name} to {DHT.network[id_dest].id}")
         message.value["id_dest"] = id_dest
         self.route_message(message)
 
 
     def send_message(self, ip_dest, message): # REWORK DEST
-        logging.debug(f"{self.env.now} - {self.id} sending {message.type.name} to {ip_dest}")
+        logging.debug(f"{self.env.now} - {self.id} sending {message.type.name} to {DHT.network[ip_dest].id}")
         dest = DHT.network[ip_dest]
         message.trace.append((self.ip, self.id))
         self.env.process(transport(self.env, dest, message))
@@ -227,7 +247,7 @@ class Node:
     
 
     def receive_message(self, message):
-        logging.debug(f"{self.env.now} - {self.ip} received {message.type.name} from {message.sender}")
+        logging.debug(f"{self.env.now} - {self.id} received {message.type.name} from {DHT.network[message.sender].id}")
         if message.type == MessageType.JOIN_REQUEST:
             self.handle_join_request(message)
             self.send_ok(message.sender, message)
@@ -270,6 +290,24 @@ class Node:
         elif message.type == MessageType.DEPARTURE:
             self.handle_departure(message)
             self.send_ok(message.sender, message)
+        
+        elif message.type == MessageType.DELETE_DATA:
+            self.handle_delete_data(message)
+            self.send_ok(message.sender, message)
+
+
+    def handle_delete_data(self, message):
+        id_data = message.value["id_data"]
+        # Si donnée originale : clean la replication
+        #BUG ICI
+        print(f"{self.id} JE DELETE {id_data}")
+        if id_data not in [ data.id for data in self.get_replicated_data() ]:
+            message_delete = Message(MessageType.DELETE_DATA, self.ip, {"id_data" : id_data})
+            # Trouver le bon voisin qui doit désormais supprimer sa réplication
+            dest = self.leftNeighbors[0] if self.leftNeighbors[0] != message.sender else self.rightNeighbors[0]
+            self.env.process(self.send_message(dest, message_delete))
+        self.data.pop(id_data)
+        print(f"{self.data}")
 
 
 
