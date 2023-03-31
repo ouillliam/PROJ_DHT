@@ -204,22 +204,18 @@ class Node:
 
         join_delay = self.env.timeout(1)
         yield self.can_join & join_delay
-        # TODO : Relocate fitting data, Supprimer les données répliquées de mon ancien voisin, Répliquer mes données sur mon nouveau voisin
-        #self.relocate_fitting_data()
+        self.relocate_fitting_data()
         logging.info(f"{self.env.now} - JOIN : ({self.ip}, {self.id})")
    
-    # def relocate_fitting_data(self):
-    #     adjacent_neighbors_ip = [self.leftNeighbors[0], self.rightNeighbors[0]]
-    #     adjacent_neighbors = [DHT.network[ip] for ip in adjacent_neighbors_ip]
-    #     for neighbor in adjacent_neighbors:
-    #         # Itérer sur les données originales du voisin
-    #         # print((data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()))
-    #         for data in (data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()):
-    #             if self.check_if_can_store(data):
-    #                 logging.debug(f"{self.env.now} - ({self.ip}, {self.id}) RELOCATING DATA {data.id}")
-    #                 self.data[data.id] = data
-    #                 print(f"J'envoie relocate a {neighbor.id}")
-    #                 self.env.process(self.send_message(neighbor.ip, Message(MessageType.RELOCATE, self.ip, {"id_data" : data.id})))
+    def relocate_fitting_data(self):
+        adjacent_neighbors_ip = [self.leftNeighbors[0], self.rightNeighbors[0]]
+        adjacent_neighbors = [DHT.network[ip] for ip in adjacent_neighbors_ip]
+        for neighbor in adjacent_neighbors:
+            # Itérer sur les données originales du voisin
+            for data in (data for data in neighbor.data.values() if data not in neighbor.get_replicated_data()):
+                if self.check_if_can_store(data):
+                    logging.debug(f"{self.env.now} - ({self.ip}, {self.id}) RELOCATING DATA {data.id}")
+                    self.data[data.id] = data
                     
 
 
@@ -297,18 +293,6 @@ class Node:
         elif message.type == MessageType.RELOCATE:
             self.handle_relocate(message)
             self.send_ok(message.sender, message)
-
-
-    def handle_relocate(self, message):
-        print(f"RELOCATE {self.id}")
-        id_data = message.value["id_data"]
-        if len(message.trace) >= 2:
-            print("OUI")
-            if id_data in self.data.keys():
-                self.data.pop(id_data)
-        elif len(message.trace) == 1:
-            ip_dest = self.leftNeighbors[0] if self.leftNeighbors[0] != message.trace[-1][0] else self.rightNeighbors[0]
-            self.env.process(self.send_message(ip_dest, message))
 
 
     def handle_delete_data(self, message):
